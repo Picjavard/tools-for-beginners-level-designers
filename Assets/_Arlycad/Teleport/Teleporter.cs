@@ -69,7 +69,7 @@ namespace Arlycad
         readonly TriggerLatch latch = new TriggerLatch();
         readonly List<GameObject> pendingEntrants = new List<GameObject>();
         readonly List<GameObject> pendingMoves = new List<GameObject>();
-        readonly Dictionary<int, float> nextEnterTime = new Dictionary<int, float>();
+        readonly Dictionary<ActorId, float> nextEnterTime = new Dictionary<ActorId, float>();
 
         bool spent;
         bool warnedMissingDestination;
@@ -252,7 +252,7 @@ namespace Arlycad
                 return false;
 
             float readyAt;
-            return nextEnterTime.TryGetValue(actor.GetInstanceID(), out readyAt) && Time.time < readyAt;
+            return nextEnterTime.TryGetValue(ActorId.Of(actor), out readyAt) && Time.time < readyAt;
         }
 
         void Stamp(GameObject actor)
@@ -260,7 +260,7 @@ namespace Arlycad
             if (cooldown <= 0f)
                 return;
 
-            nextEnterTime[actor.GetInstanceID()] = Time.time + cooldown;
+            nextEnterTime[ActorId.Of(actor)] = Time.time + cooldown;
         }
 
         void WarnMissingDestination()

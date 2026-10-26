@@ -9,7 +9,7 @@ namespace Arlycad
     /// </summary>
     public sealed class TriggerLatch
     {
-        readonly Dictionary<int, int> counts = new Dictionary<int, int>();
+        readonly Dictionary<ActorId, int> counts = new Dictionary<ActorId, int>();
 
         public int Count
         {
@@ -21,7 +21,7 @@ namespace Arlycad
             if (actor == null)
                 return false;
 
-            int id = actor.GetInstanceID();
+            ActorId id = ActorId.Of(actor);
             int count;
             counts.TryGetValue(id, out count);
             counts[id] = count + 1;
@@ -33,7 +33,7 @@ namespace Arlycad
             if (actor == null)
                 return false;
 
-            int id = actor.GetInstanceID();
+            ActorId id = ActorId.Of(actor);
             int count;
             if (!counts.TryGetValue(id, out count))
                 return false;

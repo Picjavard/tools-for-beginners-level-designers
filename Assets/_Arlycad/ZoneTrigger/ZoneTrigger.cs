@@ -77,7 +77,7 @@ namespace Arlycad
         readonly TriggerLatch latch = new TriggerLatch();
         readonly List<GameObject> entered = new List<GameObject>();
         readonly List<GameObject> exited = new List<GameObject>();
-        readonly Dictionary<int, float> nextEnterTime = new Dictionary<int, float>();
+        readonly Dictionary<ActorId, float> nextEnterTime = new Dictionary<ActorId, float>();
         readonly Dictionary<GameObject, float> nextRepeatAt = new Dictionary<GameObject, float>();
         readonly List<GameObject> repeatKeys = new List<GameObject>();
 
@@ -236,7 +236,7 @@ namespace Arlycad
                 return false;
 
             float readyAt;
-            return nextEnterTime.TryGetValue(actor.GetInstanceID(), out readyAt) && Time.time < readyAt;
+            return nextEnterTime.TryGetValue(ActorId.Of(actor), out readyAt) && Time.time < readyAt;
         }
 
         void Stamp(GameObject actor)
@@ -244,7 +244,7 @@ namespace Arlycad
             if (cooldown <= 0f)
                 return;
 
-            nextEnterTime[actor.GetInstanceID()] = Time.time + cooldown;
+            nextEnterTime[ActorId.Of(actor)] = Time.time + cooldown;
         }
 
         void Reject(GameObject actor, string reason)

@@ -121,18 +121,10 @@ namespace Arlycad
             if (Types.TryGetValue(typeName, out cached))
                 return cached;
 
-            Type found = null;
-            System.Reflection.Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            for (int i = 0; i < assemblies.Length; i++)
-            {
-                found = assemblies[i].GetType(typeName);
-                if (found != null)
-                    break;
-
-                found = assemblies[i].GetType("Arlycad." + typeName);
-                if (found != null)
-                    break;
-            }
+            System.Reflection.Assembly assembly = typeof(ActorQuery).Assembly;
+            Type found = assembly.GetType(typeName);
+            if (found == null)
+                found = assembly.GetType("Arlycad." + typeName);
 
             Types[typeName] = found;
             return found;
