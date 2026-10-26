@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Arlycad
 {
     /// <summary>
-    /// Кто задел триггер и подходит ли он под фильтр зоны.
+    /// Кто задел триггер и есть ли у него нужная роль.
     /// Несколько коллайдеров одного Rigidbody считаются одним объектом.
-    /// Метка ищется на задетом объекте и на всех его родителях.
+    /// Role Holder ищется на задетом объекте и на всех его родителях.
     /// </summary>
     public static class ActorQuery
     {
@@ -16,8 +15,6 @@ namespace Arlycad
             public GameObject Identity;
             public GameObject SearchFrom;
         }
-
-        static readonly Dictionary<string, Type> Types = new Dictionary<string, Type>();
 
         public static Hit Describe(Collider other)
         {
@@ -32,7 +29,7 @@ namespace Arlycad
             return hit;
         }
 
-        public static bool Matches(GameObject searchFrom, bool reactToAny, List<string> markerNames, List<Role> roles)
+        public static bool Matches(GameObject searchFrom, bool reactToAny, List<Role> roles)
         {
             if (searchFrom == null)
                 return false;
@@ -40,26 +37,15 @@ namespace Arlycad
             if (reactToAny)
                 return true;
 
-            bool hasMarkers = markerNames != null && markerNames.Count > 0;
-            bool hasRoles = HasAnyRoleAsset(roles);
-            if (!hasMarkers && !hasRoles)
+            if (!HasAnyRoleAsset(roles))
                 return false;
 
-            if (hasMarkers && HasMarker(searchFrom, markerNames))
-                return true;
-
-            if (hasRoles && HasRole(searchFrom, roles))
-                return true;
-
-            return false;
+            return HasRole(searchFrom, roles);
         }
 
-        public static bool HasRules(bool reactToAny, List<string> markerNames, List<Role> roles)
+        public static bool HasRules(bool reactToAny, List<Role> roles)
         {
             if (reactToAny)
-                return true;
-
-            if (markerNames != null && markerNames.Count > 0)
                 return true;
 
             return HasAnyRoleAsset(roles);
@@ -79,24 +65,6 @@ namespace Arlycad
             return false;
         }
 
-        static bool HasMarker(GameObject searchFrom, List<string> markerNames)
-        {
-            Transform current = searchFrom.transform;
-            while (current != null)
-            {
-                for (int i = 0; i < markerNames.Count; i++)
-                {
-                    Type type = FindType(markerNames[i]);
-                    if (type != null && current.GetComponent(type) != null)
-                        return true;
-                }
-
-                current = current.parent;
-            }
-
-            return false;
-        }
-
         static bool HasRole(GameObject searchFrom, List<Role> roles)
         {
             Transform current = searchFrom.transform;
@@ -110,24 +78,6 @@ namespace Arlycad
             }
 
             return false;
-        }
-
-        static Type FindType(string typeName)
-        {
-            if (string.IsNullOrEmpty(typeName))
-                return null;
-
-            Type cached;
-            if (Types.TryGetValue(typeName, out cached))
-                return cached;
-
-            System.Reflection.Assembly assembly = typeof(ActorQuery).Assembly;
-            Type found = assembly.GetType(typeName);
-            if (found == null)
-                found = assembly.GetType("Arlycad." + typeName);
-
-            Types[typeName] = found;
-            return found;
         }
     }
 }

@@ -19,16 +19,12 @@ namespace Arlycad
         public class TriggerEvent : UnityEvent<GameObject> { }
 
         [InspectorName("Реагировать на всех")]
-        [Tooltip("Реагировать на любой физический объект. Метки и роли тогда не проверяются.")]
+        [Tooltip("Реагировать на любой физический объект. Роли тогда не проверяются.")]
         public bool reactToAny;
 
         [InspectorName("Роли")]
         [Tooltip("Роли-ассеты. Объект подходит, если у него или у родителя есть Role Holder с одной из этих ролей. Новая роль создаётся без кода: Create > Arlycad > Role.")]
         public List<Role> roles = new List<Role>();
-
-        [InspectorName("Метки")]
-        [Tooltip("Имена компонентов-меток из папки Tags. Объект подходит, если на нём или на родителе висит хотя бы одна.")]
-        public List<string> targetScriptNames = new List<string>();
 
         [InspectorName("Только один раз")]
         [Tooltip("После первого входа зона замолкает до перезапуска сцены или вызова ResetZone.")]
@@ -101,9 +97,9 @@ namespace Arlycad
             if (hit.Identity == null || hit.Identity == gameObject)
                 return;
 
-            if (!ActorQuery.Matches(hit.SearchFrom, reactToAny, targetScriptNames, roles))
+            if (!ActorQuery.Matches(hit.SearchFrom, reactToAny, roles))
             {
-                Reject(hit.Identity, "нет подходящей метки или роли");
+                Reject(hit.Identity, "нет подходящей роли");
                 return;
             }
 

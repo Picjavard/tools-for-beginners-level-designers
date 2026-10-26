@@ -39,10 +39,6 @@ namespace Arlycad
         [Tooltip("Роли, которым разрешён вход. Проверяются, только если «Реагировать на всех» выключено.")]
         public List<Role> roles = new List<Role>();
 
-        [InspectorName("Метки")]
-        [Tooltip("Метки-скрипты, которым разрешён вход.")]
-        public List<string> targetScriptNames = new List<string>();
-
         [InspectorName("Пауза, секунды")]
         [Tooltip("Тот же объект не телепортируется повторно, пока не пройдёт столько секунд. Защита от плиты, точка которой стоит внутри неё самой.")]
         [Min(0f)]
@@ -83,9 +79,9 @@ namespace Arlycad
             if (hit.Identity == null || hit.Identity == gameObject)
                 return;
 
-            if (!ActorQuery.Matches(hit.SearchFrom, reactToAny, targetScriptNames, roles))
+            if (!ActorQuery.Matches(hit.SearchFrom, reactToAny, roles))
             {
-                Reject(hit.Identity, "нет подходящей метки или роли");
+                Reject(hit.Identity, "нет подходящей роли");
                 return;
             }
 

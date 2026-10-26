@@ -35,7 +35,6 @@ namespace Arlycad
                 if (!serializedObject.FindProperty("reactToAny").boolValue)
                 {
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("roles"), true);
-                    MarkerListGUI.Draw(serializedObject.FindProperty("targetScriptNames"));
                 }
 
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("cooldown"));

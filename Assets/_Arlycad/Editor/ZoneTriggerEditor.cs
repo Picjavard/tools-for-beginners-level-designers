@@ -9,7 +9,7 @@ namespace Arlycad
         const string PhysicsHelp =
             "На зоне нужен Collider с включённым Is Trigger. " +
             "У того, кто входит, нужен Rigidbody. Персонажу на Character Controller поставьте Rigidbody и включите Is Kinematic. " +
-            "Метка или роль может висеть на вошедшем объекте или на его родителе.";
+            "Role Holder с нужной ролью может висеть на вошедшем объекте или на его родителе.";
 
         public override void OnInspectorGUI()
         {
@@ -26,11 +26,10 @@ namespace Arlycad
             if (!any)
             {
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("roles"), true);
-                MarkerListGUI.Draw(serializedObject.FindProperty("targetScriptNames"));
-                if (!ActorQuery.HasRules(false, zone.targetScriptNames, zone.roles))
+                if (!ActorQuery.HasRules(false, zone.roles))
                 {
                     EditorGUILayout.HelpBox(
-                        "Сейчас зона никого не примет. Включите «Реагировать на всех», добавьте роль или метку.",
+                        "Сейчас зона никого не примет. Включите «Реагировать на всех» или добавьте роль.",
                         MessageType.Warning);
                 }
             }
