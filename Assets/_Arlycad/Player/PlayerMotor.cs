@@ -30,6 +30,16 @@ namespace Arlycad
         [Min(0f)]
         public float gravity = 25f;
 
+        [InspectorName("Время койота")]
+        [Tooltip("Сколько секунд после схода с края ещё можно прыгнуть.")]
+        [Min(0f)]
+        public float coyoteTime = 0.12f;
+
+        [InspectorName("Предел кадров")]
+        [Tooltip("Не больше стольких кадров в секунду. 0 снимает предел. Вертикальная синхронизация при этом выключается, иначе монитор на 120 или 144 Гц её проигнорирует.")]
+        [Min(0)]
+        public int frameCap = 60;
+
         [InspectorName("Рост стоя")]
         [Min(0.5f)]
         public float standingHeight = 1.8f;
@@ -50,6 +60,8 @@ namespace Arlycad
         CharacterController controller;
         CapsuleCollider sensor;
         float verticalVelocity;
+        float lastGroundedTime = float.NegativeInfinity;
+        int appliedFrameCap = int.MinValue;
         bool wantsCrouch;
 
         public bool IsCrouched
@@ -93,6 +105,8 @@ namespace Arlycad
 
         void Update()
         {
+            ApplyFrameCap();
+
             if (wantsCrouch)
                 ApplyHeight(crouchHeight);
             else if (controller.height < standingHeight - 0.01f && HasHeadroom())
@@ -111,14 +125,36 @@ namespace Arlycad
                 transform.rotation = Quaternion.LookRotation(wish.normalized);
 
             bool grounded = controller.isGrounded;
+            if (grounded)
+                lastGroundedTime = Time.time;
+
             if (grounded && verticalVelocity < 0f)
                 verticalVelocity = -2f;
 
-            if (grounded && controls != null && controls.JumpPressed)
+            bool canJump = Time.time - lastGroundedTime <= coyoteTime;
+            if (canJump && controls != null && controls.JumpPressed)
+            {
                 verticalVelocity = Mathf.Sqrt(jumpHeight * 2f * gravity);
+                lastGroundedTime = float.NegativeInfinity;
+            }
 
             verticalVelocity -= gravity * Time.deltaTime;
             controller.Move((wish + Vector3.up * verticalVelocity) * Time.deltaTime);
+        }
+
+        void ApplyFrameCap()
+        {
+            if (frameCap == appliedFrameCap)
+                return;
+
+            appliedFrameCap = frameCap;
+            if (frameCap > 0)
+            {
+                QualitySettings.vSyncCount = 0;
+                Application.targetFrameRate = frameCap;
+            }
+            else
+                Application.targetFrameRate = -1;
         }
 
         public void Crouch()

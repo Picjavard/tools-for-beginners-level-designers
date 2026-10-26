@@ -93,6 +93,8 @@ MonoBehaviour:
   crouchSpeed: 2.5
   jumpHeight: 1.2
   gravity: 25
+  coyoteTime: 0.12
+  frameCap: 60
   standingHeight: 1.8
   crouchHeight: 1.1
   controls: {fileID: 114001}
