@@ -23,9 +23,16 @@ namespace Arlycad
                 return hit;
 
             hit.SearchFrom = other.gameObject;
-            hit.Identity = other.attachedRigidbody != null
-                ? other.attachedRigidbody.gameObject
-                : other.gameObject;
+            Rigidbody body = other.attachedRigidbody;
+            GameObject identity = body != null ? body.gameObject : other.gameObject;
+            if (body != null)
+            {
+                CharacterController controller = body.GetComponentInParent<CharacterController>();
+                if (controller != null)
+                    identity = controller.gameObject;
+            }
+
+            hit.Identity = identity;
             return hit;
         }
 

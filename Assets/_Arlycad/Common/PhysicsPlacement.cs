@@ -12,19 +12,21 @@ namespace Arlycad
             if (target == null)
                 return;
 
-            Rigidbody body = target.GetComponentInParent<Rigidbody>();
             CharacterController controller = target.GetComponentInParent<CharacterController>();
+            Rigidbody body = target.GetComponent<Rigidbody>();
+            if (body == null && controller == null)
+                body = target.GetComponentInParent<Rigidbody>();
 
             Transform root = target.transform;
-            if (body != null)
-                root = body.transform;
-            else if (controller != null)
+            if (controller != null)
                 root = controller.transform;
+            else if (body != null)
+                root = body.transform;
 
             if (controller != null)
                 controller.enabled = false;
 
-            if (body != null)
+            if (body != null && body.transform == root)
             {
                 body.position = position;
                 if (applyRotation)
