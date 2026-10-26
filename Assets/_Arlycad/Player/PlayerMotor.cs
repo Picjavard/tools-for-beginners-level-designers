@@ -59,6 +59,10 @@ namespace Arlycad
 
         CharacterController controller;
         CapsuleCollider sensor;
+        Transform ground;
+        Vector3 groundPosition;
+        Quaternion groundRotation;
+        static readonly RaycastHit[] groundHits = new RaycastHit[8];
         float verticalVelocity;
         float lastGroundedTime = float.NegativeInfinity;
         int appliedFrameCap = int.MinValue;
@@ -125,6 +129,7 @@ namespace Arlycad
                 transform.rotation = Quaternion.LookRotation(wish.normalized);
 
             bool grounded = controller.isGrounded;
+            RideGround();
             if (grounded)
                 lastGroundedTime = Time.time;
 
@@ -140,6 +145,79 @@ namespace Arlycad
 
             verticalVelocity -= gravity * Time.deltaTime;
             controller.Move((wish + Vector3.up * verticalVelocity) * Time.deltaTime);
+            RememberGround();
+        }
+
+        void RideGround()
+        {
+            if (ground == null)
+                return;
+
+            Vector3 position;
+            Quaternion rotation;
+            PoseOf(ground, out position, out rotation);
+            Quaternion turn = rotation * Quaternion.Inverse(groundRotation);
+            Vector3 target = position + turn * (transform.position - groundPosition);
+            groundPosition = position;
+            groundRotation = rotation;
+
+            Vector3 shift = target - transform.position;
+            if (shift.sqrMagnitude < 0.00000001f)
+                return;
+
+            controller.enabled = false;
+            transform.position = target;
+            controller.enabled = true;
+        }
+
+        void RememberGround()
+        {
+            Vector3 origin = transform.position + Vector3.up * 0.35f;
+            int count = Physics.SphereCastNonAlloc(origin, 0.1f, Vector3.down, groundHits, 0.55f, ~0, QueryTriggerInteraction.Ignore);
+            Transform found = null;
+            float nearest = float.MaxValue;
+            for (int i = 0; i < count; i++)
+            {
+                Transform hit = groundHits[i].transform;
+                if (hit == null || hit == transform || hit.IsChildOf(transform))
+                    continue;
+                if (groundHits[i].normal.y < 0.5f)
+                    continue;
+                if (groundHits[i].distance < nearest)
+                {
+                    nearest = groundHits[i].distance;
+                    found = hit;
+                }
+            }
+
+            if (found != null)
+            {
+                Rigidbody support = found.GetComponentInParent<Rigidbody>();
+                if (support != null && support.transform != transform && !support.transform.IsChildOf(transform))
+                    found = support.transform;
+            }
+
+            if (found != ground)
+                ground = found;
+
+            if (ground == null)
+                return;
+
+            PoseOf(ground, out groundPosition, out groundRotation);
+        }
+
+        static void PoseOf(Transform support, out Vector3 position, out Quaternion rotation)
+        {
+            Rigidbody body = support.GetComponent<Rigidbody>();
+            if (body != null && body.isKinematic)
+            {
+                position = body.position;
+                rotation = body.rotation;
+                return;
+            }
+
+            position = support.position;
+            rotation = support.rotation;
         }
 
         void ApplyFrameCap()
